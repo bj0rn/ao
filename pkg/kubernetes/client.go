@@ -1,72 +1,55 @@
 package kubernetes
 
 import (
-	"crypto/tls"
+	"flag"
 	"fmt"
-	"net"
-	"net/http"
-	"time"
+	"os"
+	"path/filepath"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
-const (
-	PODS_PATTERN_ALL    = "%s/api/v1/namespaces/%s/pods"
-	COMMAND_PATTERN     = "%s/api/v1/namespaces/%s/pods/%s/exec?command=env"
-	PORTFORWARD_PATTERN = "%s/api/v1/namespaces/{namespace}/pods/{name}/portforward"
-)
-
-var (
-	transport = http.Transport{
-		Dial:            dialTimeout,
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+func homeDir() string {
+	if h := os.Getenv("HOME"); h != "" {
+		return h
 	}
-
-	client = http.Client{
-		Transport: &transport,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-	}
-)
-
-var timeout = time.Duration(1 * time.Second)
-
-func dialTimeout(network, addr string) (net.Conn, error) {
-	return net.DialTimeout(network, addr, timeout)
+	return os.Getenv("USERPROFILE") // windows
 }
 
 //GetVersions get applications version of all running pods
 func GetVersions(cmd, token, namespace string) string {
-	//get every pod (Names only)
-	podList := fmt.Sprintf(PODS_PATTERN_ALL, "https://master-api.theopsh.net:8443", namespace)
+	var kubeconfig *string
+	if home := homeDir(); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.Parse()
 
-	resp, err := get(podList, token)
+	// use the current context in kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
-		return ""
+		panic(err.Error())
 	}
-	defer resp.Body.Close()
 
-	command := fmt.Sprintf(COMMAND_PATTERN, "https://master-api.theopsh.net:8443", namespace, "node-1-tkx5f")
-	resp, err = get(command, token)
+	// create the clientset
+	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return ""
+		panic(err.Error())
 	}
 
-	c := &CommandParameter{
-		Pod:       "node-1-tkx5f",
-		Namespace: "test",
-		Command:   "ls",
-		Stdout:    "true",
-		Stderr:    "true",
-		Stdin:     "true",
+	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
+	if err != nil {
+		panic(err.Error())
 	}
+	fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
 
-	ExecuteCommand("master-api.theopsh.net:8443", token, c)
-
-	//body, _ := ioutil.ReadAll(resp.Body)
-
-	return "Yo"
+	return ""
 }
 
+//GetHealthStatus of every application
 func GetHealthStatus(namespace, token string) {
 
 	//get every pod
@@ -82,49 +65,49 @@ func GetHealthStatus(namespace, token string) {
 	//return results
 }
 
-func post(url, payload, token string) (string, error) {
-	req, err := http.NewRequest("POST", url, nil)
-	if err != nil {
-		return "", err
-	}
+//func post(url, payload, token string) (string, error) {
+//	req, err := http.NewRequest("POST", url, nil)
+//	if err != nil {
+//		return "", err
+//	}
 
-	tokenValue := fmt.Sprintf("Bearer %s", token)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", tokenValue)
+//	tokenValue := fmt.Sprintf("Bearer %s", token)
+//	req.Header.Set("Content-Type", "application/json")
+//	req.Header.Add("Authorization", tokenValue)
 
-	return "", nil
-}
+//	return "", nil
+//}
 
-func get(url, token string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
+//func get(url, token string) (*http.Response, error) {
+//	req, err := http.NewRequest(http.MethodGet, url, nil)
+//	if err != nil {
+//		return nil, err
+//	}
 
-	tokenValue := fmt.Sprintf("Bearer %s", token)
-	req.Header.Add("Authorization", tokenValue)
-	return client.Do(req)
-}
+//	tokenValue := fmt.Sprintf("Bearer %s", token)
+//	req.Header.Add("Authorization", tokenValue)
+//	return client.Do(req)
+//}
 
-func patch(url, payload, token string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPatch, url, nil)
-	if err != nil {
-		return nil, err
-	}
+//func patch(url, payload, token string) (*http.Response, error) {
+//	req, err := http.NewRequest(http.MethodPatch, url, nil)
+//	if err != nil {
+//		return nil, err
+//	}
 
-	tokenValue := fmt.Sprintf("Bearer %s", token)
-	req.Header.Add("Authorization", tokenValue)
+//	tokenValue := fmt.Sprintf("Bearer %s", token)
+//	req.Header.Add("Authorization", tokenValue)
 
-	return client.Do(req)
-}
+//	return client.Do(req)
+//}
 
-func put(url, token, payload string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPut, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	tokenValue := fmt.Sprintf("Bearer %s", token)
-	req.Header.Add("Authorization", tokenValue)
+//func put(url, token, payload string) (*http.Response, error) {
+//	req, err := http.NewRequest(http.MethodPut, url, nil)
+//	if err != nil {
+//		return nil, err
+//	}
+//	tokenValue := fmt.Sprintf("Bearer %s", token)
+//	req.Header.Add("Authorization", tokenValue)
 
-	return client.Do(req)
-}
+//	return client.Do(req)
+//}
