@@ -1,10 +1,12 @@
-hash: 0eeae33bdb2bbe87451210401f36eb4e9cc4931f2a269630caeb24ca4b4feffa
-updated: 2017-09-05T15:38:35.673873654+02:00
+hash: 5c111980c5437d21008b2d3eb450d8575534ee63aac958200faae214473f1ca7
+updated: 2017-11-25T11:08:33.24660433+01:00
 imports:
 - name: github.com/c-bata/go-prompt
   version: ba233229562fbeebe1328788a6245cda9124af27
 - name: github.com/fsnotify/fsnotify
   version: 4da3e2cfbabc9f751898f250b49f2439785783a1
+- name: github.com/gorilla/websocket
+  version: 23059f29570f0e13fca80ef6aea0f04c11daaa4d
 - name: github.com/hashicorp/hcl
   version: 8f6b1344a92ff8877cf24a5de9177bf7d0a2a187
   subpackages:
@@ -64,6 +66,10 @@ imports:
   - unicode/norm
 - name: gopkg.in/yaml.v2
   version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+- name: k8s.io/apimachinery
+  version: 18a564baac720819100827c16fdebcadb05b2d0d
+- name: k8s.io/client-go
+  version: e121606b0d09b2e1c467183ee46217fa85a6b672
 testImports:
 - name: gopkg.in/h2non/gock.v1
   version: 84d599244901620fb3eb96473eb9e50619f69b47

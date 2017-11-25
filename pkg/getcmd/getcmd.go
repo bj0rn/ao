@@ -428,3 +428,22 @@ func (getcmd *GetcmdClass) OcLogin() (string, error) {
 
 	return output, nil
 }
+
+func (getcmd *GetcmdClass) Versions(cmd, namespace string) (string, error) {
+	var kubeConfig kubernetes.KubeConfig
+	_, _, token, err := kubeConfig.GetClusterUserAndToken()
+	if err != nil {
+		return "", err
+	}
+	return kubernetes.GetVersions(cmd, token, namespace), nil
+}
+
+func (getCmd *GetcmdClass) Health() (string, error) {
+	var kubeConfig kubernetes.KubeConfig
+	_, _, token, err := kubeConfig.GetClusterUserAndToken()
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}

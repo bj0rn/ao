@@ -168,6 +168,28 @@ var getSecretCmd = &cobra.Command{
 	},
 }
 
+var getVersionsCmd = &cobra.Command{
+	Use:   "versions <namespace>",
+	Short: "Get Versions",
+	Long:  `The command will print the versions of every application to standard out.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		output, err := getcmdObject.Versions("env", "test" )
+		if err != nil {
+			fmt.Println("Error")
+		}
+		fmt.Println(output)
+	},
+}
+
+var getHealthStatusCmd = &cobra.Command{
+	Use:   "health",
+	Short: "Get health",
+	Long:  "The command will return the health status of all applications",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Hello world")
+	},
+}
+
 func init() {
 	RootCmd.AddCommand(getCmd)
 	getCmd.AddCommand(getFileCmd)
@@ -177,6 +199,9 @@ func init() {
 	getCmd.AddCommand(getAppsCmd)
 	getCmd.AddCommand(getEnvsCmd)
 	getCmd.AddCommand(getDeploymentsCmd)
+
+	getCmd.AddCommand(getVersionsCmd)
+	getCmd.AddCommand(getHealthStatusCmd)
 
 	getVaultCmd.Flags().BoolVarP(&showSecretContent, "show-secret-content", "s", false,
 		"This flag will print the content of the secrets in the vaults")

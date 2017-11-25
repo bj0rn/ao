@@ -44,12 +44,12 @@ This application has two main parts.
 2. apply the aoc configuration to the clusters
 `,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		commandsWithoutLogin := []string{"login", "logout", "version", "update", "help", "deploy", "adm"}
+		commandsWithoutLogin := []string{"login", "logout", "version", "update", "help", "deploy", "adm", "versions", "health"}
 
 		commands := strings.Split(cmd.CommandPath(), " ")
 		if len(commands) > 1 {
 			for _, command := range commandsWithoutLogin {
-				if commands[1] == command {
+				if commands[1] == command || commands[2] == command {
 					return
 				}
 			}
