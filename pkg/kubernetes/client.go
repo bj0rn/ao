@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	kube "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -35,15 +35,16 @@ func GetVersions(cmd, token, namespace string) string {
 	}
 
 	// create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
+	client, err := kube.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
+	pods, err := client.CoreV1().Pods("").List(metav1.ListOptions{})
 	if err != nil {
 		panic(err.Error())
 	}
+
 	fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
 
 	return ""
